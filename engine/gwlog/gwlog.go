@@ -11,6 +11,7 @@ import (
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 var (
@@ -38,6 +39,7 @@ var (
 	logger       *zap.Logger
 	sugar        *zap.SugaredLogger
 	source       string
+	filename     string
 	currentLevel Level
 )
 
@@ -92,6 +94,11 @@ func SetOutput(outputs []string) {
 	rebuildLoggerFromCfg()
 }
 
+// SetRotateFile sets the output writer
+func SetRotateFile(logfile string) {
+	filename = logfile
+}
+
 // ParseLevel converts string to Levels
 func ParseLevel(s string) Level {
 	if strings.ToLower(s) == "debug" {
@@ -112,19 +119,34 @@ func ParseLevel(s string) Level {
 }
 
 func rebuildLoggerFromCfg() {
-	if newLogger, err := cfg.Build(); err == nil {
-		if logger != nil {
-			logger.Sync()
-		}
-		logger = newLogger
-		//logger = logger.With(zap.Time("ts", time.Now()))
-		if source != "" {
-			logger = logger.With(zap.String("source", source))
-		}
-		setSugar(logger.Sugar())
-	} else {
-		panic(err)
+	syncWriter := zapcore.AddSync(&lumberjack.Logger{
+		Filename:  filename,
+		MaxSize:   1 << 30, //1G
+		LocalTime: true,
+		Compress:  true,
+	})
+	encoder := zap.NewProductionEncoderConfig()
+	encoder.EncodeTime = zapcore.ISO8601TimeEncoder
+	core := zapcore.NewCore(zapcore.NewJSONEncoder(encoder), syncWriter, zap.NewAtomicLevelAt(currentLevel))
+	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	if source != "" {
+		logger = logger.With(zap.String("source", source))
 	}
+	setSugar(logger.Sugar())
+
+	// if newLogger, err := cfg.Build(); err == nil {
+	// 	if logger != nil {
+	// 		logger.Sync()
+	// 	}
+	// 	logger = newLogger
+	// 	//logger = logger.With(zap.Time("ts", time.Now()))
+	// 	if source != "" {
+	// 		logger = logger.With(zap.String("source", source))
+	// 	}
+	// 	setSugar(logger.Sugar())
+	// } else {
+	// 	panic(err)
+	// }
 }
 
 func Debugf(format string, args ...interface{}) {

@@ -197,6 +197,18 @@ func Fatalf(format string, args ...interface{}) {
 	sugar.Fatalf(format, args...)
 }
 
+func Debug(args ...interface{}) {
+	sugar.Debug(args...)
+}
+
+func Info(args ...interface{}) {
+	sugar.Info(args...)
+}
+
+func Warn(args ...interface{}) {
+	sugar.Warn(args...)
+}
+
 func Error(args ...interface{}) {
 	// sugar.With(zap.Time("ts", time.Now())).Error(args...)
 	sugar.Error(args...)

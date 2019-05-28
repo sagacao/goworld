@@ -61,7 +61,7 @@ func SetupGWLog(component string, logLevel string, logFile string, logStderr boo
 		outputs = append(outputs, logFile)
 	}
 	gwlog.SetOutput(outputs)
-	gwlog.SetRotateFile(logFile)
+	gwlog.SetRotateFile(logFile, logStderr)
 
 	//outputWriters := make([]io.Writer, 0, 2)
 	//if logFile != "" {

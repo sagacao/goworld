@@ -1,13 +1,12 @@
 package gwlog
 
 import (
+	"os"
 	"runtime/debug"
 
 	"strings"
 
 	"encoding/json"
-
-	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -40,6 +39,7 @@ var (
 	sugar        *zap.SugaredLogger
 	source       string
 	filename     string
+	logStd       bool
 	currentLevel Level
 )
 
@@ -90,13 +90,15 @@ func TraceError(format string, args ...interface{}) {
 
 // SetOutput sets the output writer
 func SetOutput(outputs []string) {
-	cfg.OutputPaths = outputs
-	rebuildLoggerFromCfg()
+	// cfg.OutputPaths = outputs
+	// rebuildLoggerFromCfg()
 }
 
 // SetRotateFile sets the output writer
-func SetRotateFile(logfile string) {
+func SetRotateFile(logfile string, logstd bool) {
 	filename = logfile
+	logStd = logstd
+	rebuildLoggerFromCfg()
 }
 
 // ParseLevel converts string to Levels
@@ -121,16 +123,31 @@ func ParseLevel(s string) Level {
 func rebuildLoggerFromCfg() {
 	syncWriter := zapcore.AddSync(&lumberjack.Logger{
 		Filename:  filename,
-		MaxSize:   1 << 30, //1G
+		MaxSize:   128, //MB //1 << 30, //1G
 		LocalTime: true,
 		Compress:  true,
 	})
-	encoder := zap.NewProductionEncoderConfig()
-	encoder.EncodeTime = zapcore.ISO8601TimeEncoder
-	core := zapcore.NewCore(zapcore.NewJSONEncoder(encoder), syncWriter, zap.NewAtomicLevelAt(currentLevel))
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	logPriority := zap.NewAtomicLevelAt(currentLevel)
+
+	var allCore []zapcore.Core
+
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	jsonEncoder := zapcore.NewJSONEncoder(encoderConfig)
+	if logStd {
+		consoleConfig := zap.NewDevelopmentEncoderConfig()
+		consoleConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+		consoleEncoder := zapcore.NewConsoleEncoder(consoleConfig)
+		consoleDebugging := zapcore.Lock(os.Stderr) //zapcore.Lock(os.Stdout)
+		allCore = append(allCore, zapcore.NewCore(consoleEncoder, consoleDebugging, logPriority))
+	}
+	allCore = append(allCore, zapcore.NewCore(jsonEncoder, syncWriter, logPriority))
+
+	core := zapcore.NewTee(allCore...)
+	logger := zap.New(core) //.WithOptions(zap.AddCaller())
 	if source != "" {
 		logger = logger.With(zap.String("source", source))
+		// logger = logger.WithOptions(zap.Fields(zap.String("source", source)))
 	}
 	setSugar(logger.Sugar())
 
@@ -150,40 +167,49 @@ func rebuildLoggerFromCfg() {
 }
 
 func Debugf(format string, args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Debugf(format, args...)
+	// sugar.With(zap.Time("ts", time.Now())).Debugf(format, args...)
+	sugar.Debugf(format, args...)
 }
 
 func Infof(format string, args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Infof(format, args...)
+	// sugar.With(zap.Time("ts", time.Now())).Infof(format, args...)
+	sugar.Infof(format, args...)
 }
 
 func Warnf(format string, args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Warnf(format, args...)
+	// sugar.With(zap.Time("ts", time.Now())).Warnf(format, args...)
+	sugar.Warnf(format, args...)
 }
 
 func Errorf(format string, args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Errorf(format, args...)
+	// sugar.With(zap.Time("ts", time.Now())).Errorf(format, args...)
+	sugar.Errorf(format, args...)
 }
 
 func Panicf(format string, args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Panicf(format, args...)
+	// sugar.With(zap.Time("ts", time.Now())).Panicf(format, args...)
+	sugar.Panicf(format, args...)
 }
 
 func Fatalf(format string, args ...interface{}) {
 	debug.PrintStack()
-	sugar.With(zap.Time("ts", time.Now())).Fatalf(format, args...)
+	// sugar.With(zap.Time("ts", time.Now())).Fatalf(format, args...)
+	sugar.Fatalf(format, args...)
 }
 
 func Error(args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Error(args...)
+	// sugar.With(zap.Time("ts", time.Now())).Error(args...)
+	sugar.Error(args...)
 }
 
 func Panic(args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Panic(args...)
+	// sugar.With(zap.Time("ts", time.Now())).Panic(args...)
+	sugar.Panic(args...)
 }
 
 func Fatal(args ...interface{}) {
-	sugar.With(zap.Time("ts", time.Now())).Fatal(args...)
+	// sugar.With(zap.Time("ts", time.Now())).Fatal(args...)
+	sugar.Fatal(args...)
 }
 
 func setSugar(sugar_ *zap.SugaredLogger) {

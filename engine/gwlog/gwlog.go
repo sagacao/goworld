@@ -144,10 +144,10 @@ func rebuildLoggerFromCfg() {
 	allCore = append(allCore, zapcore.NewCore(jsonEncoder, syncWriter, logPriority))
 
 	core := zapcore.NewTee(allCore...)
-	logger := zap.New(core) //.WithOptions(zap.AddCaller())
+	logger := zap.New(core).WithOptions(zap.AddCaller(), zap.AddCallerSkip(1))
 	if source != "" {
-		logger = logger.With(zap.String("source", source))
-		// logger = logger.WithOptions(zap.Fields(zap.String("source", source)))
+		// logger = logger.With(zap.String("source", source))
+		logger = logger.WithOptions(zap.Fields(zap.String("source", source)))
 	}
 	setSugar(logger.Sugar())
 

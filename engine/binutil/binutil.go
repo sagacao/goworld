@@ -36,6 +36,7 @@ func setupHTTPServer(listenAddr string, wsHandler func(ws *websocket.Conn), cert
 	if wsHandler != nil {
 		gwlog.Infof("WebSocket is enabled on %s", listenAddr)
 		http.Handle("/ws", websocket.Handler(wsHandler))
+		// http.Handle("/ws", gwwebsocket.Handler(wsHandler))
 	}
 
 	go func() {

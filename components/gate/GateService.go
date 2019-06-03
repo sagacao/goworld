@@ -49,6 +49,7 @@ type GateService struct {
 	tlsConfig               *tls.Config
 	checkHeartbeatsInterval time.Duration
 	positionSyncInterval    time.Duration
+	nextHeartbeatsTime      time.Time
 }
 
 func newGateService() *GateService {
@@ -69,6 +70,7 @@ func newGateService() *GateService {
 		filterTrees:                 map[string]*_FilterTree{},
 		pendingSyncPackets:          pendingSyncPackets,
 		terminated:                  xnsyncutil.NewOneTimeCond(),
+		nextHeartbeatsTime: 		 0,
 	}
 }
 
@@ -203,7 +205,11 @@ func (gs *GateService) handleClientConnection(netconn net.Conn, isWebSocket bool
 
 func (gs *GateService) checkClientHeartbeats() {
 	now := time.Now()
+	if now.Before(gs.nextHeartbeatsTime) {
+		return
+	}
 
+	gs.nextHeartbeatsTime = now.Add(gs.positionSyncInterval)
 	for _, cp := range gs.clientProxies { // close all connected clients when terminating
 		if cp.heartbeatTime.Add(gs.checkHeartbeatsInterval).Before(now) {
 			// 10 seconds no heartbeat, close it...
@@ -444,6 +450,7 @@ func (gs *GateService) mainRoutine() {
 			break
 		case <-gs.ticker:
 			gs.tryFlushPendingSyncPackets()
+			gs.checkClientHeartbeats()
 			break
 		}
 

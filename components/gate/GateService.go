@@ -209,8 +209,9 @@ func (gs *GateService) checkClientHeartbeats() {
 		return
 	}
 
-	gs.nextHeartbeatsTime = now.Add(gs.positionSyncInterval)
+	gs.nextHeartbeatsTime = now.Add(time.Second * 60)
 	for _, cp := range gs.clientProxies { // close all connected clients when terminating
+		gwlog.Infof("checkClientHeartbeats %s ...[%v, %v]", cp, cp.heartbeatTime, gs.checkHeartbeatsInterval)
 		if cp.heartbeatTime.Add(gs.checkHeartbeatsInterval).Before(now) {
 			// 10 seconds no heartbeat, close it...
 			gwlog.Infof("Connection %s timeout ...", cp)

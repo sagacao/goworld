@@ -70,7 +70,6 @@ func newGateService() *GateService {
 		filterTrees:                 map[string]*_FilterTree{},
 		pendingSyncPackets:          pendingSyncPackets,
 		terminated:                  xnsyncutil.NewOneTimeCond(),
-		nextHeartbeatsTime: 		 0,
 	}
 }
 
@@ -209,9 +208,9 @@ func (gs *GateService) checkClientHeartbeats() {
 		return
 	}
 
-	gs.nextHeartbeatsTime = now.Add(time.Second * 60)
+	gs.nextHeartbeatsTime = now.Add(time.Second)
 	for _, cp := range gs.clientProxies { // close all connected clients when terminating
-		gwlog.Infof("checkClientHeartbeats %s ...[%v, %v]", cp, cp.heartbeatTime, gs.checkHeartbeatsInterval)
+		// gwlog.Infof("checkClientHeartbeats %s ...[%v, %v]", cp, cp.heartbeatTime, gs.checkHeartbeatsInterval)
 		if cp.heartbeatTime.Add(gs.checkHeartbeatsInterval).Before(now) {
 			// 10 seconds no heartbeat, close it...
 			gwlog.Infof("Connection %s timeout ...", cp)

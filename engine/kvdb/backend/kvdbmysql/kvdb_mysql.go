@@ -68,6 +68,21 @@ func (sqlkvdb *mysqlKVDB) Put(key string, val string) (err error) {
 	return
 }
 
+func (sqlkvdb *mysqlKVDB) HGet(name string, key string) (val string, err error) {
+	row := sqlkvdb.db.QueryRow("SELECT `val` FROM `__kv__` WHERE `key` = ?", key)
+	err = row.Scan(&val)
+	if err == sql.ErrNoRows {
+		err = nil // not found, use default val ""
+	}
+
+	return
+}
+
+func (sqlkvdb *mysqlKVDB) HPut(name string, key string, val string) (err error) {
+	_, err = sqlkvdb.db.Exec("INSERT INTO `__kv__`(`key`, `val`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `val`=?", key, val, val)
+	return
+}
+
 type sqlKVDBIterator struct {
 	rows *sql.Rows
 }

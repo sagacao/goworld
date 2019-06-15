@@ -4,6 +4,8 @@ package kvdbtypes
 type KVDBEngine interface {
 	Get(key string) (val string, err error)
 	Put(key string, val string) (err error)
+	HGet(name string, key string) (val string, err error)
+	HPut(name string, key string, val string) (err error)
 	Find(beginKey string, endKey string) (Iterator, error)
 	Close()
 	IsConnectionError(err error) bool

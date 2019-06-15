@@ -100,6 +100,24 @@ func Get(key string, callback KVDBGetCallback) {
 	}), ac)
 }
 
+// HGet gets value of key from KVDB, returns in callback
+func HGet(name string, key string, callback KVDBGetCallback) {
+	var ac async.AsyncCallback
+	if callback != nil {
+		ac = func(res interface{}, err error) {
+			if err != nil {
+				callback("", err)
+			} else {
+				callback(res.(string), nil)
+			}
+		}
+	}
+	async.AppendAsyncJob(_KVDB_ASYNC_JOB_GROUP, kvdbRoutine(func() (res interface{}, err error) {
+		res, err = kvdbEngine.HGet(name, key)
+		return
+	}), ac)
+}
+
 func kvdbRoutine(r func() (res interface{}, err error)) func() (res interface{}, err error) {
 	kvdbroutine := func() (res interface{}, err error) {
 		for {
@@ -135,6 +153,21 @@ func Put(key string, val string, callback KVDBPutCallback) {
 
 	async.AppendAsyncJob(_KVDB_ASYNC_JOB_GROUP, kvdbRoutine(func() (res interface{}, err error) {
 		err = kvdbEngine.Put(key, val)
+		return
+	}), ac)
+}
+
+// HPut puts key-value item to KVDB, returns in callback
+func HPut(name string, key string, val string, callback KVDBPutCallback) {
+	var ac async.AsyncCallback
+	if callback != nil {
+		ac = func(res interface{}, err error) {
+			callback(err)
+		}
+	}
+
+	async.AppendAsyncJob(_KVDB_ASYNC_JOB_GROUP, kvdbRoutine(func() (res interface{}, err error) {
+		err = kvdbEngine.HPut(name, key, val)
 		return
 	}), ac)
 }

@@ -62,6 +62,27 @@ func (kvdb *mongoKVDB) Get(key string) (val string, err error) {
 	return
 }
 
+func (kvdb *mongoKVDB) HGet(name string, key string) (val string, err error) {
+	q := kvdb.c.FindId(key)
+	var doc map[string]string
+	err = q.One(&doc)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			err = nil
+		}
+		return
+	}
+	val = doc[_VAL_KEY]
+	return
+}
+
+func (kvdb *mongoKVDB) HPut(name string, key string, val string) (err error) {
+	_, err = kvdb.c.UpsertId(key, map[string]string{
+		_VAL_KEY: val,
+	})
+	return
+}
+
 type mongoKVIterator struct {
 	it *mgo.Iter
 }

@@ -110,6 +110,21 @@ func (db *redisKVDB) Put(key string, val string) error {
 	return err
 }
 
+func (db *redisKVDB) HGet(name string, key string) (val string, err error) {
+	dbname := strings.Join([]string{db.kPrefix, name}, "_")
+	r, err := redis.String(db.c.Do("HGET", dbname, key))
+	if err != nil && !strings.Contains(err.Error(), "nil returned") {
+		return "", err
+	}
+	return r, nil
+}
+
+func (db *redisKVDB) HPut(name string, key string, val string) (err error) {
+	dbname := strings.Join([]string{db.kPrefix, name}, "_")
+	_, err = db.c.Do("HSET", dbname, key, val)
+	return
+}
+
 type redisKVDBIterator struct {
 	db       *redisKVDB
 	leftKeys []string

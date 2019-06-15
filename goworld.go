@@ -3,7 +3,6 @@ package goworld
 import (
 	"time"
 
-	"github.com/xiaonanln/goTimer"
 	"github.com/sagacao/goworld/components/game"
 	"github.com/sagacao/goworld/engine/common"
 	"github.com/sagacao/goworld/engine/crontab"
@@ -12,6 +11,7 @@ import (
 	"github.com/sagacao/goworld/engine/post"
 	"github.com/sagacao/goworld/engine/service"
 	"github.com/sagacao/goworld/engine/storage"
+	"github.com/xiaonanln/goTimer"
 )
 
 // Export useful types
@@ -197,6 +197,16 @@ func GetKVDB(key string, callback kvdb.KVDBGetCallback) {
 // PutKVDB puts key-value to KVDB
 func PutKVDB(key string, val string, callback kvdb.KVDBPutCallback) {
 	kvdb.Put(key, val, callback)
+}
+
+// HGetKVDB gets value of key from KVDB
+func HGetKVDB(name string, key string, callback kvdb.KVDBGetCallback) {
+	kvdb.HGet(name, key, callback)
+}
+
+// HPutKVDB puts key-value to KVDB
+func HPutKVDB(name string, key string, val string, callback kvdb.KVDBPutCallback) {
+	kvdb.HPut(name, key, val, callback)
 }
 
 // GetOrPut gets value of key from KVDB, if val not exists or is "", put key-value to KVDB.

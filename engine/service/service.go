@@ -11,13 +11,13 @@ import (
 	"math/rand"
 
 	"github.com/pkg/errors"
-	"github.com/xiaonanln/goTimer"
 	"github.com/sagacao/goworld/engine/common"
 	"github.com/sagacao/goworld/engine/entity"
 	"github.com/sagacao/goworld/engine/gwlog"
 	"github.com/sagacao/goworld/engine/gwvar"
 	"github.com/sagacao/goworld/engine/srvdis"
 	"github.com/sagacao/goworld/engine/storage"
+	"github.com/xiaonanln/goTimer"
 )
 
 const (
@@ -204,7 +204,7 @@ func createPersistentServiceEntity(serviceName string) {
 		} else {
 			eid = ids[0]
 			// try to load entity on the current game, but we need to tell dispatcher first
-			entity.LoadEntityOnGame(serviceName, eid, gameid)
+			entity.LoadEntityOnGame(serviceName, eid, gameid, common.EntityID(""))
 			gwlog.Infof("Loading service entity: %s: %s", serviceName, eid)
 		}
 

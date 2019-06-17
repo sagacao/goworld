@@ -5,12 +5,12 @@ import (
 
 	"time"
 
-	"github.com/xiaonanln/go-xnsyncutil/xnsyncutil"
 	"github.com/sagacao/goworld/engine/common"
 	"github.com/sagacao/goworld/engine/consts"
 	"github.com/sagacao/goworld/engine/gwlog"
 	"github.com/sagacao/goworld/engine/netutil"
 	"github.com/sagacao/goworld/engine/netutil/compress"
+	"github.com/xiaonanln/go-xnsyncutil/xnsyncutil"
 )
 
 // GoWorldConnection is the network protocol implementation of GoWorld components (dispatcher, gate, game)
@@ -104,11 +104,12 @@ func (gwc *GoWorldConnection) SendCreateEntitySomewhere(gameid uint16, entityid 
 }
 
 // SendLoadEntitySomewhere sends MT_LOAD_ENTITY_SOMEWHERE message
-func (gwc *GoWorldConnection) SendLoadEntitySomewhere(typeName string, entityID common.EntityID, gameid uint16) error {
+func (gwc *GoWorldConnection) SendLoadEntitySomewhere(typeName string, entityID common.EntityID, gameid uint16, loadEntityID common.EntityID) error {
 	packet := gwc.packetConn.NewPacket()
 	packet.AppendUint16(MT_LOAD_ENTITY_SOMEWHERE)
 	packet.AppendUint16(gameid)
 	packet.AppendEntityID(entityID)
+	packet.AppendEntityID(loadEntityID)
 	packet.AppendVarStr(typeName)
 	return gwc.SendPacketRelease(packet)
 }

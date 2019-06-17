@@ -3,11 +3,11 @@ package entity
 import (
 	"fmt"
 
-	"github.com/xiaonanln/go-aoi"
 	"github.com/sagacao/goworld/engine/common"
 	"github.com/sagacao/goworld/engine/consts"
 	"github.com/sagacao/goworld/engine/gwlog"
 	"github.com/sagacao/goworld/engine/gwutils"
+	"github.com/xiaonanln/go-aoi"
 )
 
 const (
@@ -175,14 +175,14 @@ func (space *Space) IsNil() bool {
 
 // CreateEntity creates a new local entity in this space
 func (space *Space) CreateEntity(typeName string, pos Vector3) {
-	createEntity(typeName, space, pos, "", nil)
+	createEntity(typeName, space, pos, "", "", nil)
 }
 
 // LoadEntity loads a entity of specified entityID to the space
 //
 // If the entity already exists on server, this call has no effect
 func (space *Space) LoadEntity(typeName string, entityID common.EntityID, pos Vector3) {
-	loadEntityLocally(typeName, entityID, space, pos)
+	loadEntityLocally(typeName, entityID, space.ID, space, pos)
 }
 
 func (space *Space) enter(entity *Entity, pos Vector3, isRestore bool) {

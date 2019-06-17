@@ -9,8 +9,6 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
-	"github.com/xiaonanln/go-aoi"
-	timer "github.com/xiaonanln/goTimer"
 	"github.com/sagacao/goworld/engine/common"
 	"github.com/sagacao/goworld/engine/consts"
 	"github.com/sagacao/goworld/engine/dispatchercluster"
@@ -20,6 +18,8 @@ import (
 	"github.com/sagacao/goworld/engine/post"
 	"github.com/sagacao/goworld/engine/proto"
 	"github.com/sagacao/goworld/engine/storage"
+	"github.com/xiaonanln/go-aoi"
+	timer "github.com/xiaonanln/goTimer"
 	"github.com/xiaonanln/typeconv"
 )
 
@@ -43,6 +43,7 @@ type entityTimerInfo struct {
 // represent players, NPCs, monsters. Entities can migrate among spaces.
 type Entity struct {
 	ID                   common.EntityID
+	LoadID               common.EntityID
 	TypeName             string
 	I                    IEntity
 	V                    reflect.Value

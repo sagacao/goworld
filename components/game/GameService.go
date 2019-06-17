@@ -7,8 +7,6 @@ import (
 
 	"io/ioutil"
 
-	"github.com/xiaonanln/go-xnsyncutil/xnsyncutil"
-	"github.com/xiaonanln/goTimer"
 	"github.com/sagacao/goworld/engine/async"
 	"github.com/sagacao/goworld/engine/binutil"
 	"github.com/sagacao/goworld/engine/common"
@@ -25,6 +23,8 @@ import (
 	"github.com/sagacao/goworld/engine/proto"
 	"github.com/sagacao/goworld/engine/service"
 	"github.com/sagacao/goworld/engine/srvdis"
+	"github.com/xiaonanln/go-xnsyncutil/xnsyncutil"
+	"github.com/xiaonanln/goTimer"
 )
 
 const (
@@ -122,8 +122,9 @@ func (gs *GameService) serveRoutine() {
 			case proto.MT_LOAD_ENTITY_SOMEWHERE:
 				_ = pkt.ReadUint16()
 				eid := pkt.ReadEntityID()
+				loadEid := pkt.ReadEntityID()
 				typeName := pkt.ReadVarStr()
-				gs.HandleLoadEntitySomewhere(typeName, eid)
+				gs.HandleLoadEntitySomewhere(typeName, eid, loadEid)
 			case proto.MT_CREATE_ENTITY_SOMEWHERE:
 				_ = pkt.ReadUint16() // gameid
 				entityid := pkt.ReadEntityID()
@@ -282,11 +283,11 @@ func (gs *GameService) HandleCreateEntitySomewhere(entityid common.EntityID, typ
 	entity.OnCreateEntitySomewhere(entityid, typeName, data)
 }
 
-func (gs *GameService) HandleLoadEntitySomewhere(typeName string, entityID common.EntityID) {
+func (gs *GameService) HandleLoadEntitySomewhere(typeName string, entityID common.EntityID, loadEntityID common.EntityID) {
 	if consts.DEBUG_PACKETS {
-		gwlog.Debugf("%s.handleLoadEntityAnywhere: typeName=%s, entityID=%s", gs, typeName, entityID)
+		gwlog.Debugf("%s.handleLoadEntityAnywhere: typeName=%s, entityID=%s loadEntityID=%s", gs, typeName, entityID, loadEntityID)
 	}
-	entity.OnLoadEntitySomewhere(typeName, entityID)
+	entity.OnLoadEntitySomewhere(typeName, entityID, loadEntityID)
 }
 
 func (gs *GameService) HandleSrvdisRegister(pkt *netutil.Packet) {

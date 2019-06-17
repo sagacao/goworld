@@ -226,7 +226,7 @@ func isEntityType(t reflect.Type) bool {
 //	ccRestore
 //)
 
-func createEntity(typeName string, space *Space, pos Vector3, entityID common.EntityID, data map[string]interface{}) *Entity {
+func createEntity(typeName string, space *Space, pos Vector3, entityID common.EntityID, loadEntityID common.EntityID, data map[string]interface{}) *Entity {
 	//gwlog.Debugf("createEntity: %s in Space %s", typeName, space)
 	entityTypeDesc, ok := registeredEntityTypes[typeName]
 	if !ok {
@@ -244,6 +244,7 @@ func createEntity(typeName string, space *Space, pos Vector3, entityID common.En
 	entity = reflect.Indirect(entityInstance).FieldByName("Entity").Addr().Interface().(*Entity)
 	entity.init(typeName, entityID, entityInstance)
 	entity.Space = nilSpace
+	entity.LoadID = loadEntityID
 
 	entityManager.put(entity)
 	if data != nil {
@@ -334,7 +335,7 @@ func restoreEntity(entityID common.EntityID, mdata *entityMigrateData, isRestore
 	}
 }
 
-func loadEntityLocally(typeName string, entityID common.EntityID, space *Space, pos Vector3) {
+func loadEntityLocally(typeName string, entityID common.EntityID, loadEntityID common.EntityID, space *Space, pos Vector3) {
 	// load the data from storage
 	storage.Load(typeName, entityID, func(_data interface{}, err error) {
 		// callback runs in main routine
@@ -366,7 +367,7 @@ func loadEntityLocally(typeName string, entityID common.EntityID, space *Space, 
 		for _, f := range removeFields {
 			delete(data, f)
 		}
-		createEntity(typeName, space, pos, entityID, data)
+		createEntity(typeName, space, pos, entityID, loadEntityID, data)
 	})
 }
 
@@ -378,12 +379,12 @@ func createEntitySomewhere(gameid uint16, typeName string, data map[string]inter
 
 // CreateEntityLocally creates new entity in the local game
 func CreateEntityLocally(typeName string, data map[string]interface{}) *Entity {
-	return createEntity(typeName, nil, Vector3{}, "", data)
+	return createEntity(typeName, nil, Vector3{}, "", "", data)
 }
 
 // CreateEntityLocallyWithEntityID creates new entity in the local game with specified entity ID
 func CreateEntityLocallyWithID(typeName string, data map[string]interface{}, id common.EntityID) *Entity {
-	return createEntity(typeName, nil, Vector3{}, id, data)
+	return createEntity(typeName, nil, Vector3{}, id, "", data)
 }
 
 // CreateEntitySomewhere creates new entity in any game
@@ -393,23 +394,23 @@ func CreateEntitySomewhere(gameid uint16, typeName string) common.EntityID {
 
 // OnCreateEntitySomewhere is called when CreateEntitySomewhere chooses this game
 func OnCreateEntitySomewhere(entityid common.EntityID, typeName string, data map[string]interface{}) {
-	createEntity(typeName, nil, Vector3{}, entityid, data)
+	createEntity(typeName, nil, Vector3{}, entityid, "", data)
 }
 
 // OnLoadEntitySomewhere loads entity in the local game.
-func OnLoadEntitySomewhere(typeName string, entityID common.EntityID) {
-	loadEntityLocally(typeName, entityID, nil, Vector3{})
+func OnLoadEntitySomewhere(typeName string, entityID common.EntityID, loadEntityID common.EntityID) {
+	loadEntityLocally(typeName, entityID, loadEntityID, nil, Vector3{})
 }
 
 // LoadEntityAnywhere loads entity in the any game
 //
 // LoadEntityAnywhere has no effect if entity already exists on any game
-func LoadEntityAnywhere(typeName string, entityID common.EntityID) {
-	dispatchercluster.SendLoadEntityAnywhere(typeName, entityID)
+func LoadEntityAnywhere(typeName string, entityID common.EntityID, loadEntityID common.EntityID) {
+	dispatchercluster.SendLoadEntityAnywhere(typeName, entityID, loadEntityID)
 }
 
-func LoadEntityOnGame(typeName string, entityID common.EntityID, gameid uint16) {
-	dispatchercluster.SendLoadEntityOnGame(typeName, entityID, gameid)
+func LoadEntityOnGame(typeName string, entityID common.EntityID, gameid uint16, loadEntityID common.EntityID) {
+	dispatchercluster.SendLoadEntityOnGame(typeName, entityID, gameid, loadEntityID)
 }
 
 // OnClientDisconnected is called by engine when Client is disconnected

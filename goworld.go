@@ -85,20 +85,20 @@ func CreateEntityOnGame(gameid uint16, typeName string) EntityID {
 }
 
 // LoadEntityAnywhere loads the specified entity from entity storage
-func LoadEntityAnywhere(typeName string, entityID EntityID) {
-	entity.LoadEntityAnywhere(typeName, entityID)
+func LoadEntityAnywhere(typeName string, entityID EntityID, loadEntityID EntityID) {
+	entity.LoadEntityAnywhere(typeName, entityID, loadEntityID)
 }
 
 // LoadEntityOnGame loads entity in the specified game
 // If the entity already exists on any server, LoadEntityOnGame will do nothing
-func LoadEntityOnGame(typeName string, entityID EntityID, gameid uint16) {
-	entity.LoadEntityOnGame(typeName, entityID, gameid)
+func LoadEntityOnGame(typeName string, entityID EntityID, gameid uint16, loadEntityID EntityID) {
+	entity.LoadEntityOnGame(typeName, entityID, gameid, loadEntityID)
 }
 
 // LoadEntityLocally load entity in the local game
 // If the entity already exists on any server, LoadEntityLocally will do nothing
-func LoadEntityLocally(typeName string, entityID EntityID) {
-	entity.LoadEntityOnGame(typeName, entityID, GetGameID())
+func LoadEntityLocally(typeName string, entityID EntityID, loadEntityID EntityID) {
+	entity.LoadEntityOnGame(typeName, entityID, GetGameID(), loadEntityID)
 }
 
 // ListEntityIDs gets all saved entity ids in storage, may take long time and block the main routine

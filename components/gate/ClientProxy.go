@@ -41,6 +41,7 @@ func newClientProxy(conn netutil.Connection, cfg *config.GateConfig) *ClientProx
 		GoWorldConnection: gwc,
 		clientid:          common.GenClientID(), // each client has its unique clientid
 		filterProps:       map[string]string{},
+		heartbeatTime:     time.Now(),
 	}
 }
 

@@ -209,7 +209,7 @@ func (gs *GateService) checkClientHeartbeats() {
 	}
 
 	gs.nextHeartbeatsTime = now.Add(time.Second)
-	gwlog.Debugf("checkClientHeartbeats, %v", len(gs.clientProxies))
+	// gwlog.Debugf("checkClientHeartbeats, %v", len(gs.clientProxies))
 	for _, cp := range gs.clientProxies { // close all connected clients when terminating
 		// gwlog.Infof("checkClientHeartbeats %s ...[%v, %v]", cp, cp.heartbeatTime, gs.checkHeartbeatsInterval)
 		if cp.heartbeatTime.Add(gs.checkHeartbeatsInterval).Before(now) {

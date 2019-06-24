@@ -13,7 +13,6 @@ import (
 	"path"
 
 	"github.com/pkg/errors"
-	"github.com/xiaonanln/go-xnsyncutil/xnsyncutil"
 	"github.com/sagacao/goworld/engine/binutil"
 	"github.com/sagacao/goworld/engine/common"
 	"github.com/sagacao/goworld/engine/config"
@@ -25,6 +24,7 @@ import (
 	"github.com/sagacao/goworld/engine/opmon"
 	"github.com/sagacao/goworld/engine/post"
 	"github.com/sagacao/goworld/engine/proto"
+	"github.com/xiaonanln/go-xnsyncutil/xnsyncutil"
 	"github.com/xtaci/kcp-go"
 )
 
@@ -191,9 +191,9 @@ func (gs *GateService) handleClientConnection(netconn net.Conn, isWebSocket bool
 
 	conn := netutil.NetConnection{netconn}
 	cp := newClientProxy(conn, cfg)
-	if consts.DEBUG_CLIENTS {
-		gwlog.Debugf("%s.ServeTCPConnection: client %s connected", gs, cp)
-	}
+	// if consts.DEBUG_CLIENTS {
+	gwlog.Debugf("%s.ServeTCPConnection: client %s connected", gs, cp)
+	// }
 
 	// pass the client proxy to GateService ...
 	post.Post(func() {
@@ -209,12 +209,17 @@ func (gs *GateService) checkClientHeartbeats() {
 	}
 
 	gs.nextHeartbeatsTime = now.Add(time.Second)
+	gwlog.Debugf("checkClientHeartbeats, %v", len(gs.clientProxies))
 	for _, cp := range gs.clientProxies { // close all connected clients when terminating
 		// gwlog.Infof("checkClientHeartbeats %s ...[%v, %v]", cp, cp.heartbeatTime, gs.checkHeartbeatsInterval)
 		if cp.heartbeatTime.Add(gs.checkHeartbeatsInterval).Before(now) {
 			// 10 seconds no heartbeat, close it...
 			gwlog.Infof("Connection %s timeout ...", cp)
 			cp.Close()
+
+			// post.Post(func() {
+			// 	gateService.onClientProxyClose(cp)
+			// })
 		}
 	}
 }
@@ -240,9 +245,9 @@ func (gs *GateService) onClientProxyClose(cp *ClientProxy) {
 	}
 
 	dispatchercluster.SelectByEntityID(cp.ownerEntityID).SendNotifyClientDisconnected(cp.clientid, cp.ownerEntityID)
-	if consts.DEBUG_CLIENTS {
-		gwlog.Debugf("%s.onClientProxyClose: client %s disconnected", gs, cp)
-	}
+	// if consts.DEBUG_CLIENTS {
+	gwlog.Infof("%s.onClientProxyClose: client %s disconnected", gs, cp)
+	// }
 }
 
 // HandleDispatcherClientPacket handles packets received by dispatcher client
@@ -311,7 +316,7 @@ func (gs *GateService) handleDispatcherClientPacket(msgtype proto.MsgType, packe
 }
 
 func (gs *GateService) handleSetClientFilterProp(clientproxy *ClientProxy, packet *netutil.Packet) {
-	gwlog.Debugf("%s.handleSetClientFilterProp: clientproxy=%s", gs, clientproxy)
+	// gwlog.Debugf("%s.handleSetClientFilterProp: clientproxy=%s", gs, clientproxy)
 	key := packet.ReadVarStr()
 	val := packet.ReadVarStr()
 
@@ -337,7 +342,7 @@ func (gs *GateService) handleSetClientFilterProp(clientproxy *ClientProxy, packe
 }
 
 func (gs *GateService) handleClearClientFilterProps(clientproxy *ClientProxy, packet *netutil.Packet) {
-	gwlog.Debugf("%s.handleClearClientFilterProps: clientproxy=%s", gs, clientproxy)
+	// gwlog.Debugf("%s.handleClearClientFilterProps: clientproxy=%s", gs, clientproxy)
 
 	for key, val := range clientproxy.filterProps {
 		ft, ok := gs.filterTrees[key]

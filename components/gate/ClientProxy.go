@@ -55,7 +55,7 @@ func (cp *ClientProxy) String() string {
 func (cp *ClientProxy) heartbeatTimer(heartInterval time.Duration) {
 	cp.heartTimer = timer.AddTimer(time.Second, func() {
 		now := time.Now()
-		gwlog.Debugf("heartbeatTimer %s timer ...", cp)
+		// gwlog.Debugf("heartbeatTimer %s timer ...", cp)
 		if cp.heartbeatTime.Add(heartInterval).Before(now) {
 			gwlog.Infof("Connection %s timeout ...", cp)
 			cp.Close()
@@ -63,10 +63,12 @@ func (cp *ClientProxy) heartbeatTimer(heartInterval time.Duration) {
 	})
 }
 
-// func (cp *ClientProxy) heartbeatCheck() {
+// func (cp *ClientProxy) check() {
 // 	now := time.Now()
+// 	gwlog.Debugf("heartbeatTimer %s timer ...", cp)
 // 	//if cp.heartbeatTime.Add(gs.checkHeartbeatsInterval).Before(now) {
 // 	if cp.heartbeatTime.Add(60).Before(now) {
+// 		gwlog.Infof("Connection %s timeout ...", cp)
 // 		cp.Close()
 // 	}
 // }

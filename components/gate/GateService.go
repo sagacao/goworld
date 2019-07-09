@@ -1,16 +1,14 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net"
+	"path"
 	"time"
 
+	"github.com/xiaonanln/goTimer"
 	"golang.org/x/net/websocket"
-
-	"net"
-
-	"crypto/tls"
-
-	"path"
 
 	"github.com/pkg/errors"
 	"github.com/sagacao/goworld/engine/binutil"
@@ -457,6 +455,7 @@ func (gs *GateService) mainRoutine() {
 		case <-gs.ticker:
 			gs.tryFlushPendingSyncPackets()
 			// gs.checkClientHeartbeats()
+			timer.Tick()
 			break
 		}
 

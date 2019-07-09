@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/xiaonanln/goTimer"
+
 	"time"
 
 	"github.com/sagacao/goworld/engine/common"
@@ -33,6 +35,7 @@ type ClientProxy struct {
 	clientSyncInfo clientSyncInfo
 	heartbeatTime  time.Time
 	ownerEntityID  common.EntityID // owner entity's ID
+	heartTimer     *timer.Timer
 }
 
 func newClientProxy(conn netutil.Connection, cfg *config.GateConfig) *ClientProxy {
@@ -49,6 +52,32 @@ func (cp *ClientProxy) String() string {
 	return fmt.Sprintf("ClientProxy<%s@%s>", cp.clientid, cp.RemoteAddr())
 }
 
+func (cp *ClientProxy) heartbeatTimer(heartInterval time.Duration) {
+	cp.heartTimer = timer.AddTimer(time.Second, func() {
+		now := time.Now()
+		gwlog.Debugf("heartbeatTimer %s timer ...", cp)
+		if cp.heartbeatTime.Add(heartInterval).Before(now) {
+			gwlog.Infof("Connection %s timeout ...", cp)
+			cp.Close()
+		}
+	})
+}
+
+// func (cp *ClientProxy) heartbeatCheck() {
+// 	now := time.Now()
+// 	//if cp.heartbeatTime.Add(gs.checkHeartbeatsInterval).Before(now) {
+// 	if cp.heartbeatTime.Add(60).Before(now) {
+// 		cp.Close()
+// 	}
+// }
+
+// func (cp *ClientProxy) Destory() {
+// 	cp.closeChan <- true
+// 	close(cp.closeChan)
+
+// 	cp.Close()
+// }
+
 //func (cp *ClientProxy) SendPacket(packet *netutil.Packet) error {
 //	err := cp.GoWorldConnection.SendPacket(packet)
 //	if err != nil {
@@ -59,6 +88,7 @@ func (cp *ClientProxy) String() string {
 
 func (cp *ClientProxy) serve() {
 	defer func() {
+		cp.heartTimer.Cancel()
 		cp.Close()
 		// tell the gate service that this client is down
 		post.Post(func() {

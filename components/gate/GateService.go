@@ -199,6 +199,7 @@ func (gs *GateService) handleClientConnection(netconn net.Conn, isWebSocket bool
 	post.Post(func() {
 		gs.onNewClientProxy(cp)
 	})
+	cp.heartbeatTimer(gs.checkHeartbeatsInterval)
 	cp.serve()
 }
 
@@ -455,7 +456,7 @@ func (gs *GateService) mainRoutine() {
 			break
 		case <-gs.ticker:
 			gs.tryFlushPendingSyncPackets()
-			gs.checkClientHeartbeats()
+			// gs.checkClientHeartbeats()
 			break
 		}
 
